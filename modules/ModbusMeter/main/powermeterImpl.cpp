@@ -41,7 +41,7 @@ void powermeterImpl::run_meter_loop() {
         j["meter_id"] = "MODBUS_POWERMETER";
         j["energy_Wh_import"]["total"] = energy_in;
         j["energy_Wh_export"]["total"] = energy_out;
-        j["power_W"]["total"] = power_in-power_out;
+        j["power_W"]["total"] = power_out - power_in;
         publish_powermeter(j);
         
         std::this_thread::sleep_for(std::chrono::milliseconds(config.update_interval));

@@ -56,6 +56,37 @@ void evse_managerImpl::ready() {
     mod->charger->signalState.connect([this](Charger::EvseState s){
         mod->mqtt.publish("/external/state/state_string", mod->charger->evseStateToString(s));
         mod->mqtt.publish("/external/state/state", static_cast<int>(s));
+        
+        json j;
+        j["uuid"] = "uuid-placeholder";
+        std::string evse_state;
+        switch(s) {
+            case Charger::EvseState::Disabled:
+            case Charger::EvseState::Idle:
+            case Charger::EvseState::WaitingForAuthentication:
+                evse_state = "Disabled";
+                break;
+            case Charger::EvseState::Charging:
+                evse_state = "ChargingResumed";
+                break;
+            case Charger::EvseState::ChargingPausedEV:
+                evse_state = "ChargingPausedEV";
+                break;
+            case Charger::EvseState::ChargingPausedEVSE:
+                evse_state = "ChargingPausedEVSE";
+                break;
+            case Charger::EvseState::Error:
+                evse_state = "Error";
+                break;
+            case Charger::EvseState::Faulted:
+                evse_state = "PermanentFault";
+                break;
+            case Charger::EvseState::Finished:
+                evse_state = "ChargingFinished";
+                break;
+        }
+        j["event"] = evse_state;
+        publish_session_events(j);
     });
 
     mod->charger->signalError.connect([this](Charger::ErrorState s){
