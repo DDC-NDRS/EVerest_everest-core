@@ -108,6 +108,9 @@ void Charger::runStateMachine() {
         // we start PWM here
         if (new_in_state) r_bsp->call_allow_power_on(false);
 
+        // Signal to module that we need auth
+        signalAuthRequired();
+
         // retry on Low level etc until SLAC matched.
         ISO_IEC_Coordination();
 
@@ -522,7 +525,7 @@ Charger::EvseState Charger::getCurrentState() {
     return currentState;
 }
 
-void Charger::Authorize(bool a, const char *userid) {
+void Charger::Authorize(bool a, const std::string userid) {
     std::lock_guard<std::recursive_mutex> lock(configMutex);
     authorized = a;
     // FIXME: do sth useful with userid
@@ -537,8 +540,7 @@ if (a) {
 
 bool Charger::getAuthorization() {
     std::lock_guard<std::recursive_mutex> lock(configMutex);
-    //return authorized;
-    return true; // FIXME: do not always return true here...
+    return authorized;
 }
 
 Charger::ErrorState Charger::getErrorState() {
